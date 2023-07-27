@@ -43,6 +43,22 @@ def initializeEnvironment() {
     '''
   }
 
+  if (env.CASSANDRA_VERSION.split('-')[0] == 'dse') {
+      env.DSE_FIXED_VERSION = env.CASSANDRA_VERSION.split('-')[1]
+      sh label: 'Update environment for DataStax Enterprise', script: '''#!/bin/bash -le
+        cat >> ${HOME}/environment.txt << ENVIRONMENT_EOF
+CCM_PATH=${HOME}/ccm
+CCM_CASSANDRA_VERSION=${DSE_FIXED_VERSION} # maintain for backwards compatibility
+CCM_VERSION=${DSE_FIXED_VERSION}
+CCM_SERVER_TYPE=dse
+DSE_VERSION=${DSE_FIXED_VERSION}
+CCM_IS_DSE=true
+CCM_BRANCH=${DSE_FIXED_VERSION}
+DSE_BRANCH=${DSE_FIXED_VERSION}
+ENVIRONMENT_EOF
+      '''
+  }
+
   sh label: 'Display C++ version and environment information', script: '''#!/bin/bash -le
     . ${DRIVER_BUILD_SCRIPT}
 
@@ -395,12 +411,12 @@ pipeline {
                 '3.11',     // Current Apache Cassandra®
                 '4.0',      // Development Apache Cassandra®
                 'ddac-5.1', // Current DataStax Distribution of Apache Cassandra®
-                'dse-4.8',  // Previous EOSL DataStax Enterprise
-                'dse-5.0',  // Long Term Support DataStax Enterprise
-                'dse-5.1',  // Legacy DataStax Enterprise
-                'dse-6.0',  // Previous DataStax Enterprise
-                'dse-6.7',  // Current DataStax Enterprise
-                'dse-6.8',  // Development DataStax Enterprise
+                'dse-4.8.16',  // Previous EOSL DataStax Enterprise
+                'dse-5.0.15',  // Long Term Support DataStax Enterprise
+                'dse-5.1.35',  // Legacy DataStax Enterprise
+                'dse-6.0.18',  // Previous DataStax Enterprise
+                'dse-6.7.17',  // Current DataStax Enterprise
+                'dse-6.8.30',  // Development DataStax Enterprise
                 'ALL'],
       description: '''Apache Cassandra&reg; and DataStax Enterprise server version to use for adhoc <b>BUILD-AND-EXECUTE-TESTS</b> builds
                       <table style="width:100%">
@@ -724,12 +740,12 @@ pipeline {
                    '3.11',     // Current Apache Cassandra®
                    '4.0',      // Development Apache Cassandra®
                    'ddac-5.1', // Current DataStax Distribution of Apache Cassandra®
-                   'dse-4.8',  // Previous EOSL DataStax Enterprise
-                   'dse-5.0',  // Long Term Support DataStax Enterprise
-                   'dse-5.1',  // Legacy DataStax Enterprise
-                   'dse-6.0',  // Previous DataStax Enterprise
-                   'dse-6.7',  // Current DataStax Enterprise
-                   'dse-6.8'   // Development DataStax Enterprise
+                   'dse-4.8.16',  // Previous EOSL DataStax Enterprise
+                   'dse-5.0.15',  // Long Term Support DataStax Enterprise
+                   'dse-5.1.35',  // Legacy DataStax Enterprise
+                   'dse-6.0.18',  // Previous DataStax Enterprise
+                   'dse-6.7.17',  // Current DataStax Enterprise
+                   'dse-6.8.30'   // Development DataStax Enterprise
           }
         }
         when {
