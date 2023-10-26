@@ -274,7 +274,9 @@ def deployDriver() {
       fi
       DRIVER_BASE="cpp-php-drivers/${DRIVER_FOLDER}/builds"
       curl -u "${ARTIFACTORY_CREDENTIALS}" -T "{$(echo packaging/packages/${DRIVER_LIBRARY}-cpp-driver* | tr ' ' ',')}" "${ARTIFACTORY_BASE_URL}/${DRIVER_BASE}/${DRIVER_VERSION}/${GIT_SHA}/${OS_DISTRO}/${OS_DISTRO_RELEASE}/${DRIVER_LIBRARY}/v${DRIVER_VERSION}/"
-      curl -u "${ARTIFACTORY_CREDENTIALS}" -T "{$(echo packaging/packages/libuv* | tr ' ' ',')}" "${ARTIFACTORY_BASE_URL}/${DRIVER_BASE}/${DRIVER_VERSION}/${GIT_SHA}/${OS_DISTRO}/${OS_DISTRO_RELEASE}/dependencies/libuv/v${LIBUV_VERSION}/"
+      if [[ "${OS_DISTRO}" != "ubuntu" ]] || [[ "${OS_DISTRO_RELEASE}" <= "18.04" ]]; then
+        curl -u "${ARTIFACTORY_CREDENTIALS}" -T "{$(echo packaging/packages/libuv* | tr ' ' ',')}" "${ARTIFACTORY_BASE_URL}/${DRIVER_BASE}/${DRIVER_VERSION}/${GIT_SHA}/${OS_DISTRO}/${OS_DISTRO_RELEASE}/dependencies/libuv/v${LIBUV_VERSION}/"
+      fi
     '''
   }
 }
