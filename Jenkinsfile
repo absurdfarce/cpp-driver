@@ -431,7 +431,15 @@ pipeline {
                         </tr>
                         <tr>
                           <td><strong>4.0</strong></td>
-                          <td>Apache Cassandra&reg; v4.x (<b>CURRENTLY UNDER DEVELOPMENT</b>)</td>
+                          <td>Apache Cassandra&reg; v4.0.x</td>
+                        </tr>
+                        <tr>
+                          <td><strong>4.1</strong></td>
+                          <td>Apache Cassandra&reg; v4.1.x</td>
+                        </tr>
+                        <tr>
+                          <td><strong>5.0</strong></td>
+                          <td>Apache Cassandra&reg; v5.0.x (<b>CURRENTLY UNDER DEVELOPMENT</b>)</td>
                         </tr>
                         <tr>
                           <td><strong>dse-5.1</strong></td>
@@ -715,9 +723,9 @@ pipeline {
         axes {
           axis {
             name 'SERVER_VERSION'
-            values '3.0',      // Previous Apache Cassandra
-                   '3.11',     // Current Apache Cassandra
-                   '4.0',      // Development Apache Cassandra
+            values '3.11',     // Previous Apache Cassandra
+                   '4.1',      // Previous Apache Cassandra
+                   '5.0',      // Current Apache Cassandra
                    'dse-5.1.35',  // Legacy DataStax Enterprise
                    'dse-6.8.30'   // Development DataStax Enterprise
           }
