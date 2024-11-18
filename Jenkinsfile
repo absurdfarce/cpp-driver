@@ -408,8 +408,10 @@ pipeline {
       name: 'ADHOC_BUILD_AND_EXECUTE_TESTS_SERVER_VERSION',
       choices: [
                 '3.0',      // Previous Apache Cassandra
-                '3.11',     // Current Apache Cassandra
-                '4.0',      // Development Apache Cassandra
+                '3.11',     // Previous Apache Cassandra
+                '4.0',      // Previous Apache Cassandra
+                '4.1',      // Previous Apache Cassandra
+                '5.0',      // Current Apache Cassandra
                 'dse-5.1.35',  // Legacy DataStax Enterprise
                 'dse-6.8.30',  // Development DataStax Enterprise
                 'ALL'],
