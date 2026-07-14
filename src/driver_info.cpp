@@ -29,7 +29,7 @@
 namespace datastax { namespace internal {
 
 const char* driver_name() {
-  return "DataStax C/C++ Driver for Apache Cassandra and DataStax Products";
+  return "Apache Cassandra C/C++ Driver";
 }
 
 const char* driver_version() {
