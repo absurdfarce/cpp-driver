@@ -14,18 +14,6 @@ def initializeEnvironment() {
   env.DRIVER_CASSANDRA_HEADER = 'include/cassandra.h'
   env.DRIVER_VERSION_HEADER = 'include/cassandra.h'
   env.DRIVER_LIBRARY = 'cassandra'
-  if (env.GIT_URL.contains('cpp-driver-private')) {
-    env.DRIVER_DISPLAY_NAME = 'private ' + env.DRIVER_DISPLAY_NAME
-    env.DRIVER_METRIC_TYPE = 'oss-private'
-  } else if (env.GIT_URL.contains('cpp-dse-driver')) {
-    env.DRIVER_DISPLAY_NAME = 'DSE C/C++ Driver'
-    env.DRIVER_TYPE = 'DSE'
-    env.DRIVER_METRIC_TYPE = 'dse'
-    env.DRIVER_BUILD_SCRIPT = "cpp-driver/${env.DRIVER_BUILD_SCRIPT}"
-    env.DRIVER_CASSANDRA_HEADER = 'cpp-driver/include/cassandra.h'
-    env.DRIVER_VERSION_HEADER = 'include/dse.h'
-    env.DRIVER_LIBRARY = 'dse'
-  }
 
   env.DRIVER_VERSION = sh(label: 'Determine driver version', script: '''#!/bin/bash -le
     . ${DRIVER_BUILD_SCRIPT}
@@ -129,23 +117,6 @@ def configureTestingEnvironment() {
     . ${DRIVER_BUILD_SCRIPT}
 
     configure_testing_environment
-  '''
-}
-
-def buildDocuments() {
-  sh label: 'Building documents with documentor', script: '''#!/bin/bash -le
-    documentor --output-directory ${HOME}/docs/drivers/cpp .
-  '''
-
-  sh label: 'Archive documentor generated documents', script: '''#!/bin/bash -le
-    (
-      cd ${HOME}/docs/drivers/cpp
-      prefix=cpp-driver
-      if [ "${DRIVER_TYPE}" = 'DSE' ]; then
-        prefix=cpp-dse-driver
-      fi
-      tar czf ${WORKSPACE}/${prefix}-documents.tgz -C ${HOME}/docs/drivers/cpp .
-    )
   '''
 }
 
@@ -327,12 +298,11 @@ pipeline {
                       <br/>''')
     choice(
       name: 'ADHOC_BUILD_AND_EXECUTE_TESTS_SERVER_VERSION',
-      choices: [
-                '3.0',      // Previous Apache Cassandra
-                '3.11',     // Current Apache Cassandra
-                '4.0',      // Development Apache Cassandra
-                'dse-5.1.35',  // Legacy DataStax Enterprise
-                'dse-6.8.30',  // Development DataStax Enterprise
+      choices: ['4.0',
+                '4.1',
+                '5.0',
+                'dse-5.1.35',
+                'dse-6.8.30',
                 'ALL'],
       description: '''Apache Cassandra&reg; and DataStax Enterprise server version to use for adhoc <b>BUILD-AND-EXECUTE-TESTS</b> builds
                       <table style="width:100%">
@@ -343,16 +313,16 @@ pipeline {
                           <th align="left">Description</th>
                         </tr>
                         <tr>
-                          <td><strong>3.0</strong></td>
-                          <td>Apache Cassandra&reg; v3.0.x</td>
-                        </tr>
-                        <tr>
-                          <td><strong>3.11</strong></td>
-                          <td>Apache Cassandra&reg; v3.11.x</td>
-                        </tr>
-                        <tr>
                           <td><strong>4.0</strong></td>
-                          <td>Apache Cassandra&reg; v4.x (<b>CURRENTLY UNDER DEVELOPMENT</b>)</td>
+                          <td>Apache Cassandra&reg; v4.0.x</td>
+                        </tr>
+                        <tr>
+                          <td><strong>4.1</strong></td>
+                          <td>Apache Cassandra&reg; v4.1.x</td>
+                        </tr>
+                        <tr>
+                          <td><strong>5.0</strong></td>
+                          <td>Apache Cassandra&reg; v5.0.x</td>
                         </tr>
                         <tr>
                           <td><strong>dse-5.1</strong></td>
@@ -360,7 +330,7 @@ pipeline {
                         </tr>
                         <tr>
                           <td><strong>dse-6.8</strong></td>
-                          <td>DataStax Enterprise v6.8.x (<b>CURRENTLY UNDER DEVELOPMENT</b>)</td>
+                          <td>DataStax Enterprise v6.8.x</td>
                         </tr>
                       </table>''')
     choice(
@@ -547,11 +517,11 @@ pipeline {
         axes {
           axis {
             name 'SERVER_VERSION'
-            values '3.0',      // Previous Apache Cassandra
-                   '3.11',     // Current Apache Cassandra
-                   '4.0',      // Development Apache Cassandra
-                   'dse-5.1.35',  // Legacy DataStax Enterprise
-                   'dse-6.8.30'   // Development DataStax Enterprise
+            values '4.0',
+                   '4.1',
+                   '5.0',
+                   'dse-5.1.35',
+                   'dse-6.8.30'
           }
         }
         when {
