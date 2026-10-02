@@ -191,7 +191,6 @@ bool Future::set_callback(Future::Callback callback, void* data) {
 }
 
 void Future::internal_set(ScopedMutex& lock) {
-  is_set_ = true;
   if (callback_) {
     Callback callback = callback_;
     void* data = data_;
@@ -199,6 +198,12 @@ void Future::internal_set(ScopedMutex& lock) {
     callback(CassFuture::to(this), data);
     lock.lock();
   }
+
+  /* CPP-987
+
+     Don't mark future as set until _after_ callbacks have run */
+  is_set_ = true;
+
   // Broadcast after we've run the callback so that threads waiting
   // on this future see the side effects of the callback.
   uv_cond_broadcast(&cond_);
