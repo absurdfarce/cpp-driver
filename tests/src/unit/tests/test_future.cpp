@@ -126,3 +126,19 @@ TEST(FutureUnitTest, CallbackAfterFutureIsSet) {
   ASSERT_TRUE(future.set_callback(&on_future_callback, &is_future_callback_called));
   ASSERT_TRUE(is_future_callback_called);
 }
+
+void callback_before_ready_callback(CassFuture* future, void* data) {
+  bool* is_future_callback_called = static_cast<bool*>(data);
+  *is_future_callback_called = future->ready();
+}
+
+TEST(FutureUnitTest, CallbacksRunBeforeFutureIsReady) {
+  bool is_future_ready = false;
+  Future future(Future::FUTURE_TYPE_GENERIC);
+  ASSERT_TRUE(future.set_callback(&callback_before_ready_callback, &is_future_ready));
+
+  ASSERT_FALSE(is_future_ready);
+  future.set();
+  ASSERT_TRUE(future.ready());
+  ASSERT_FALSE(is_future_ready);
+}
