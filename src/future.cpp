@@ -191,6 +191,10 @@ bool Future::set_callback(Future::Callback callback, void* data) {
 }
 
 void Future::internal_set(ScopedMutex& lock) {
+
+  /* CASSCPP-6 Identify the thread performing set so that wait() calls form this thread won't block */
+  set_caller_ = uv_thread_self();
+
   if (callback_) {
     Callback callback = callback_;
     void* data = data_;
@@ -203,6 +207,8 @@ void Future::internal_set(ScopedMutex& lock) {
 
      Don't mark future as set until _after_ callbacks have run */
   is_set_ = true;
+
+  set_caller_ = 0;
 
   // Broadcast after we've run the callback so that threads waiting
   // on this future see the side effects of the callback.

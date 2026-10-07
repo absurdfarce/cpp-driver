@@ -132,7 +132,7 @@ void callback_get_ready(CassFuture* future, void* data) {
   *callback_flag = !future->ready();
 }
 
-TEST(FutureUnitTest, CallbacksRunBeforeFutureIsReady) {
+TEST(FutureUnitTest, CallbacksRunBeforeFutureIsSet) {
   bool callback_flag = false;
   Future future(Future::FUTURE_TYPE_GENERIC);
   ASSERT_TRUE(future.set_callback(&callback_get_ready, &callback_flag));
@@ -159,8 +159,13 @@ TEST(FutureUnitTest, WaitInCallbacksDoesNotIntroduceDeadlock) {
   Future future(Future::FUTURE_TYPE_GENERIC);
   ASSERT_TRUE(future.set_callback(&callback_with_wait, &callback_flag));
 
+  /* Confirm that ready() state in the callback is false before we do anything */
   ASSERT_FALSE(callback_flag);
   future.set();
+
+  /* Confirm that (a) we're getting the expected true value from ready() here and
+     (b) that callback_flag has moved from false to true.  This transition indicates
+     both that the callback ran (which is enough to show that deadlock didn't occur). */
   ASSERT_TRUE(future.ready());
   ASSERT_TRUE(callback_flag);
 }
