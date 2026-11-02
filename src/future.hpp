@@ -43,6 +43,8 @@ public:
 
   enum Type { FUTURE_TYPE_GENERIC, FUTURE_TYPE_SESSION, FUTURE_TYPE_RESPONSE };
 
+  enum SetState { UNSTARTED, STARTED, FINISHED };
+
   struct Error : public Allocated {
     Error(CassError code, const String& message)
         : code(code)
@@ -53,7 +55,7 @@ public:
   };
 
   Future(Type type)
-      : is_set_(false)
+      : state_(UNSTARTED)
       , type_(type)
       , callback_(NULL)
       , set_caller_(0) {
@@ -70,7 +72,7 @@ public:
 
   bool ready() {
     ScopedMutex lock(&mutex_);
-    return is_set_;
+    return is_set();
   }
 
   virtual void wait() {
@@ -96,7 +98,7 @@ public:
 
   bool set_error(CassError code, const String& message) {
     ScopedMutex lock(&mutex_);
-    if (!is_set_) {
+    if (!is_set()) {
       internal_set_error(code, message, lock);
       return true;
     }
@@ -106,7 +108,7 @@ public:
   bool set_callback(Callback callback, void* data);
 
 protected:
-  bool is_set() const { return is_set_; }
+  bool is_set() const { return state_ == FINISHED; }
 
   bool is_set_caller() {
     /* CASSCPP-6 If we're being called by the thread setting the future just return immediately */
@@ -119,7 +121,7 @@ protected:
     if (is_set_caller()) {
       return;
     }
-    while (!is_set_) {
+    while (!is_set()) {
       uv_cond_wait(&cond_, lock.get());
     }
   }
@@ -128,12 +130,12 @@ protected:
     if (is_set_caller()) {
       return false;
     }
-    if (!is_set_) {
+    if (!is_set()) {
       if (uv_cond_timedwait(&cond_, lock.get(), timeout_us * 1000) != 0) { // Expects nanos
         return false;
       }
     }
-    return is_set_;
+    return is_set();
   }
 
   void internal_set(ScopedMutex& lock);
@@ -146,7 +148,7 @@ protected:
   uv_mutex_t mutex_;
 
 private:
-  bool is_set_;
+  SetState state_;
   uv_cond_t cond_;
   Type type_;
   ScopedPtr<Error> error_;

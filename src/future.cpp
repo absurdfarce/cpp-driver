@@ -182,7 +182,7 @@ bool Future::set_callback(Future::Callback callback, void* data) {
   }
   callback_ = callback;
   data_ = data;
-  if (is_set_) {
+  if (is_set()) {
     // Run the callback if the future is already set
     lock.unlock();
     callback(CassFuture::to(this), data);
@@ -191,6 +191,13 @@ bool Future::set_callback(Future::Callback callback, void* data) {
 }
 
 void Future::internal_set(ScopedMutex& lock) {
+
+  /* If the future has already been set (or another thread is already working on it) return immediately */
+  if (state_ != UNSTARTED) {
+    return;
+  }
+
+  state_ = STARTED;
 
   /* CASSCPP-6 Identify the thread performing set so that wait() calls from this thread won't block */
   set_caller_ = uv_thread_self();
@@ -206,7 +213,7 @@ void Future::internal_set(ScopedMutex& lock) {
   /* CPP-987
 
      Don't mark future as set until _after_ callbacks have run */
-  is_set_ = true;
+  state_ = FINISHED;
 
   set_caller_ = 0;
 
