@@ -141,6 +141,16 @@ protected:
   void internal_set(ScopedMutex& lock);
 
   void internal_set_error(CassError code, const String& message, ScopedMutex& lock) {
+
+    /* If the future has already been set (or another thread is already working on it) return immediately.
+
+       We do not change the value of state_ to started because internal_set() performs a similar check and
+       doing so here would lead to an early return from that function.  We'll let the subsequent call to
+       internal_set() take care of any state updates. */
+    if (state_ != UNSTARTED) {
+      return;
+    }
+
     error_.reset(new Error(code, message));
     internal_set(lock);
   }
