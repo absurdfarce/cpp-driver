@@ -98,7 +98,7 @@ public:
 
   bool set_error(CassError code, const String& message) {
     ScopedMutex lock(&mutex_);
-    if (!is_set()) {
+    if (is_unstarted()) {
       internal_set_error(code, message, lock);
       return true;
     }
@@ -108,6 +108,9 @@ public:
   bool set_callback(Callback callback, void* data);
 
 protected:
+
+  bool is_unstarted() const { return state_ == UNSTARTED; }
+
   bool is_set() const { return state_ == FINISHED; }
 
   bool is_set_caller() {
